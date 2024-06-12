@@ -17,16 +17,6 @@ def taylor(f, x0, n):
         T = (df_x0 * (x - x0) ** k) / factorial(k)
         p = p + T
     return p
-
-def cota_error(f, px, x0, n):
-    M = max(x0, px)
-    m = min(x0, px)
-    w = np.linspace(m, M, 1000)
-    dfn = sp.lambdify(x, sp.diff(f, x, n + 1))
-    ma = np.max(np.abs(dfn(w)))
-    c = ma * (px - x0) ** (n + 1) / factorial(n + 1)
-    return c
-
 def graficar_serie_taylor(f, x0, n):
     P = taylor(f, x0, n)
     P_func = sp.lambdify(x, P)
