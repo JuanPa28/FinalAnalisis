@@ -5,37 +5,46 @@ import sympy as sp
 
 X = sp.symbols('x')
 
-def polinomio_simple(x_dato, y_dato):
+
+# Funciones actualizadas
+
+def polinomio_simple(x_dato, y_dato, grado):
     N = len(x_dato)
-    M = np.zeros([N, N])
+    M = np.zeros([N, grado + 1])
     P = 0
 
     for i in range(N):
         M[i, 0] = 1
-        for j in range(1, N):
+        for j in range(1, grado + 1):
             M[i, j] = M[i, j - 1] * x_dato[i]
 
-    ai = np.linalg.solve(M, y_dato)
+    ai = np.linalg.lstsq(M, y_dato, rcond=None)[0]
 
-    for i in range(N):
+    for i in range(grado + 1):
         P += ai[i] * X ** i
 
-    resultado = f"El polinomio interpolante es: P(X) = {P}"
+    resultado = f"El polinomio interpolante es: P(X) = {sp.expand(P)}"
     return sp.lambdify(X, P), resultado
 
-def interp_lagrange(x_dato, y_dato):
-    N = len(x_dato)
-    P = 0
+
+def lagrange(xdata, ydata, grado):
+    N = min(len(xdata), grado + 1)
+    P = 0  # Inicializar el polinomio interpolante a 0
 
     for i in range(N):
-        T = 1
-        for j in range(N):
-            if j != i:
-                T *= (X - x_dato[j]) / (x_dato[i] - x_dato[j])
-        P += T * y_dato[i]
+        T = 1  # Inicializar el término de Lagrange para i-ésimo término
 
-    resultado = f"El polinomio es P(X) = {sp.expand(P)}"
+        for j in range(N):
+            if j != i:  # Construir el i-ésimo término de Lagrange, excluyendo el j = i
+                T = T * (X - xdata[j]) / (xdata[i] - xdata[j])
+
+        P = P + T * ydata[i]  # Sumar el i-ésimo término al polinomio interpolante
+
+    resultado = f'El polinomio es P(X): {sp.expand(P)}'
+
+    # Retornar una función lambda que evalúe el polinomio para cualquier valor de X y el resultado
     return sp.lambdify(X, P), resultado
+
 
 def ajuste_minimos_cuadrados(x_dato, y_dato, grado):
     A = np.vander(x_dato, grado + 1)
@@ -44,8 +53,6 @@ def ajuste_minimos_cuadrados(x_dato, y_dato, grado):
     resultado = f"El polinomio de ajuste es: {p}"
     return p, resultado
 
-def modelo_potencias(x, a, b):
-    return a * x ** b
 
 class InterfazInterpolacionAjuste:
     def __init__(self, root):
@@ -53,7 +60,7 @@ class InterfazInterpolacionAjuste:
         self.root.title("Interpolación y Ajuste de Curva")
 
         tk.Button(root, text="Interpolación Polinómica Simple", command=self.abrir_polinomio_simple).pack()
-        tk.Button(root, text="Interpolación de Lagrange", command=self.abrir_interp_lagrange).pack()
+        tk.Button(root, text="Interpolación de Lagrange", command=self.abrir_lagrange).pack()
         tk.Button(root, text="Ajuste de Mínimos Cuadrados", command=self.abrir_ajuste_minimos_cuadrados).pack()
 
     def abrir_polinomio_simple(self):
@@ -68,18 +75,23 @@ class InterfazInterpolacionAjuste:
         entrada_y = tk.Entry(ventana)
         entrada_y.grid(row=1, column=1)
 
+        tk.Label(ventana, text="Grado del polinomio:").grid(row=2, column=0)
+        entrada_grado = tk.Entry(ventana)
+        entrada_grado.grid(row=2, column=1)
+
         def calcular_polinomio_simple():
             x_dato = np.fromstring(entrada_x.get(), sep=',')
             y_dato = np.fromstring(entrada_y.get(), sep=',')
+            grado = int(entrada_grado.get())
             try:
-                f, resultado = polinomio_simple(x_dato, y_dato)
+                f, resultado = polinomio_simple(x_dato, y_dato, grado)
                 messagebox.showinfo("Resultado", resultado)
             except Exception as e:
                 messagebox.showerror("Error", f"Ocurrió un error: {str(e)}")
 
-        tk.Button(ventana, text="Calcular", command=calcular_polinomio_simple).grid(row=2, columnspan=2)
+        tk.Button(ventana, text="Calcular", command=calcular_polinomio_simple).grid(row=3, columnspan=2)
 
-    def abrir_interp_lagrange(self):
+    def abrir_lagrange(self):
         ventana = tk.Toplevel(self.root)
         ventana.title("Interpolación de Lagrange")
 
@@ -91,16 +103,21 @@ class InterfazInterpolacionAjuste:
         entrada_y = tk.Entry(ventana)
         entrada_y.grid(row=1, column=1)
 
-        def calcular_interp_lagrange():
+        tk.Label(ventana, text="Grado del polinomio:").grid(row=2, column=0)
+        entrada_grado = tk.Entry(ventana)
+        entrada_grado.grid(row=2, column=1)
+
+        def calcular_lagrange():
             x_dato = np.fromstring(entrada_x.get(), sep=',')
             y_dato = np.fromstring(entrada_y.get(), sep=',')
+            grado = int(entrada_grado.get())
             try:
-                f, resultado = interp_lagrange(x_dato, y_dato)
+                f, resultado = lagrange(x_dato, y_dato, grado)
                 messagebox.showinfo("Resultado", resultado)
             except Exception as e:
                 messagebox.showerror("Error", f"Ocurrió un error: {str(e)}")
 
-        tk.Button(ventana, text="Calcular", command=calcular_interp_lagrange).grid(row=2, columnspan=2)
+        tk.Button(ventana, text="Calcular", command=calcular_lagrange).grid(row=3, columnspan=2)
 
     def abrir_ajuste_minimos_cuadrados(self):
         ventana = tk.Toplevel(self.root)
@@ -129,6 +146,7 @@ class InterfazInterpolacionAjuste:
                 messagebox.showerror("Error", f"Ocurrió un error: {str(e)}")
 
         tk.Button(ventana, text="Calcular", command=calcular_ajuste_minimos_cuadrados).grid(row=3, columnspan=2)
+
 
 # Crear ventana principal
 root = tk.Tk()
