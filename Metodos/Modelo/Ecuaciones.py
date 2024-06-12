@@ -3,6 +3,7 @@ from tkinter import messagebox
 import numpy as np
 import matplotlib.pyplot as plt
 
+
 # Método de Euler
 def metodo_euler(f, a, b, h, condicion_inicial):
     n = int((b - a) / h)
@@ -11,6 +12,7 @@ def metodo_euler(f, a, b, h, condicion_inicial):
     for i in range(n):
         y.append(y[-1] + h * f(t[i], y[-1]))
     return t, y
+
 
 # Método de Runge-Kutta de orden 4
 def metodo_runge_kutta(f, a, b, h, condicion_inicial):
@@ -24,6 +26,7 @@ def metodo_runge_kutta(f, a, b, h, condicion_inicial):
         k4 = h * f(t[i] + h, y[-1] + k3)
         y.append(y[-1] + (k1 + 2 * k2 + 2 * k3 + k4) / 6)
     return t, y
+
 
 # Interfaz gráfica
 class InterfazEcuaciones:
@@ -61,7 +64,13 @@ class InterfazEcuaciones:
             b = float(self.entrada_b.get())
             h = float(self.entrada_h.get())
             ci = float(self.entrada_ci.get())
-            f = eval(f"lambda t, y: {funcion}")
+
+            if h == 0:
+                raise ValueError("El tamaño del paso h no puede ser cero.")
+
+            f = eval(f"lambda t, y: {funcion}", {"_builtins_": None}, {})
+            if f is None:
+                raise ValueError("La ecuación diferencial no es válida.")
             return f, a, b, h, ci
         except Exception as e:
             messagebox.showerror("Error", f"Entrada inválida: {e}")
@@ -70,14 +79,20 @@ class InterfazEcuaciones:
     def calcular_euler(self):
         f, a, b, h, ci = self.obtener_entradas()
         if f is not None:
-            t, y = metodo_euler(f, a, b, h, ci)
-            self.mostrar_grafica(t, y, "Método de Euler")
+            try:
+                t, y = metodo_euler(f, a, b, h, ci)
+                self.mostrar_grafica(t, y, "Método de Euler")
+            except Exception as e:
+                messagebox.showerror("Error", f"Error al calcular con el método de Euler: {e}")
 
     def calcular_runge_kutta(self):
         f, a, b, h, ci = self.obtener_entradas()
         if f is not None:
-            t, y = metodo_runge_kutta(f, a, b, h, ci)
-            self.mostrar_grafica(t, y, "Runge-Kutta de Orden 4")
+            try:
+                t, y = metodo_runge_kutta(f, a, b, h, ci)
+                self.mostrar_grafica(t, y, "Runge-Kutta de Orden 4")
+            except Exception as e:
+                messagebox.showerror("Error", f"Error al calcular con Runge-Kutta: {e}")
 
     def mostrar_grafica(self, t, y, metodo):
         plt.figure()
@@ -88,6 +103,7 @@ class InterfazEcuaciones:
         plt.legend()
         plt.grid(True)
         plt.show()
+
 
 # Crear ventana principal
 root = tk.Tk()
