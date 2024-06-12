@@ -1,62 +1,66 @@
 import tkinter as tk
 from tkinter import messagebox
-import numpy as np
 import sympy as sp
+import numpy as np
+import matplotlib.pyplot as plt
+from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 
-# Definiciones de funciones para encontrar ceros utilizando los nuevos métodos
+# Definiciones de funciones para encontrar ceros utilizando los métodos numéricos
 x = sp.symbols("x")
 
 def bisection(f, a, b, tol=1e-5):
     if f(a) * f(b) > 0:
-        return None, "La función no cumple el teorema en el intervalo"
+        return None, "La función no cambia de signo en el intervalo dado"
     else:
-        while np.abs(b - a) > tol:
+        while abs(b - a) > tol:
             c = (a + b) / 2
             if f(a) * f(c) < 0:
                 b = c
             else:
                 a = c
-    return c
+        return c, None
 
 def false_position(f, a, b, tol=1e-5):
     if f(a) * f(b) > 0:
-        return None, "La función no cumple el teorema en el intervalo"
+        return None, "La función no cambia de signo en el intervalo dado"
     else:
         while True:
-            c = a - ((f(a) * (a - b)) / (f(a) - f(b)))
-            if np.abs(f(c)) <= tol:
-                break
+            c = a - (f(a) * (a - b)) / (f(a) - f(b))
+            if abs(f(c)) <= tol:
+                return c, None
             if f(a) * f(c) < 0:
                 b = c
             else:
                 a = c
-        return c
 
-def newton(f, xo, tol):
-    df = sp.diff(f, x)
-    newton_method = x - f / df
-    newton_method = sp.lambdify(x, newton_method)
-    i = 1
+def newton(f_expr, xo, tol):
+    df = sp.diff(f_expr, x)
+    newton_method = x - f_expr / df
+    newton_method = sp.lambdify(x, newton_method, "numpy")
     while True:
         x1 = newton_method(xo)
-        if np.abs(x1 - xo) <= tol:
-            break
+        if abs(x1 - xo) <= tol:
+            return x1, None
         xo = x1
-        i += 1
-    return x1, i
 
-def secante(f, xo, x1, tol):
+
+def secante(f, x0, x1, tol):
     try:
-        x2 = x1 - f(x1) * (x1 - xo) / (f(xo) - f(x1))
-        while np.abs(x2 - x1) > tol:
-            xo = x1
-            x1 = x2
-            x2 = x1 - f(x1) * (xo - x1) / (f(xo) - f(x1))
-        return x2
+        while abs(x1 - x0) > tol:
+            f_x0 = f(x0)
+            f_x1 = f(x1)
+
+            if f_x1 == f_x0:
+                return None, "Error: División por cero en la función secante."
+
+            x0, x1 = x1, x1 - f_x1 * ((x1 - x0) / (f_x1 - f_x0))
+
+        return x1, None
     except ZeroDivisionError:
         return None, "Error: División por cero."
     except TypeError as e:
         return None, f"Error de tipo: {e}"
+
 
 # Interfaz gráfica
 class InterfazCeros:
@@ -96,12 +100,14 @@ class InterfazCeros:
             tol = float(entrada_tolerancia.get())
 
             try:
-                f = eval("lambda x: " + funcion, {"x": x})
-                raiz = bisection(f, a, b, tol)
-                if raiz is None:
-                    messagebox.showerror("Error", "La función no cumple el teorema en el intervalo")
+                f_expr = sp.sympify(funcion)
+                f = sp.lambdify(x, f_expr, "numpy")
+                raiz, error = bisection(f, a, b, tol)
+                if error:
+                    messagebox.showerror("Error", error)
                 else:
                     messagebox.showinfo("Resultado", f"Raíz: {raiz}")
+                    self.graficar_funcion(f_expr, a, b, raiz, "Bisección")
             except Exception as e:
                 messagebox.showerror("Error", f"Ocurrió un error: {str(e)}")
 
@@ -134,12 +140,14 @@ class InterfazCeros:
             tol = float(entrada_tolerancia.get())
 
             try:
-                f = eval("lambda x: " + funcion)
-                raiz = false_position(f, a, b, tol)
-                if raiz is None:
-                    messagebox.showerror("Error", "La función no cumple el teorema en el intervalo")
+                f_expr = sp.sympify(funcion)
+                f = sp.lambdify(x, f_expr, "numpy")
+                raiz, error = false_position(f, a, b, tol)
+                if error:
+                    messagebox.showerror("Error", error)
                 else:
                     messagebox.showinfo("Resultado", f"Raíz: {raiz}")
+                    self.graficar_funcion(f_expr, a, b, raiz, "Falsa Posición")
             except Exception as e:
                 messagebox.showerror("Error", f"Ocurrió un error: {str(e)}")
 
@@ -167,9 +175,14 @@ class InterfazCeros:
             tol = float(entrada_tolerancia.get())
 
             try:
-                f = eval(funcion, {"x": x})
-                raiz, iteraciones = newton(f, x0, tol)
-                messagebox.showinfo("Resultado", f"Raíz: {raiz}\nIteraciones: {iteraciones}")
+                f_expr = sp.sympify(funcion)
+                f = sp.lambdify(x, f_expr, "numpy")
+                raiz, error = newton(f_expr, x0, tol)
+                if error:
+                    messagebox.showerror("Error", error)
+                else:
+                    messagebox.showinfo("Resultado", f"Raíz: {raiz}")
+                    self.graficar_funcion(f_expr, x0 - 2, x0 + 2, raiz, "Newton")
             except Exception as e:
                 messagebox.showerror("Error", f"Ocurrió un error: {str(e)}")
 
@@ -202,18 +215,39 @@ class InterfazCeros:
             tol = float(entrada_tolerancia.get())
 
             try:
-                f = eval("lambda x: " + funcion)
-                raiz = secante(f, x0, x1, tol)
-                if raiz is None:
-                    messagebox.showerror("Error", "Ocurrió un error en el cálculo")
+                f_expr = sp.sympify(funcion)
+                f = sp.lambdify(x, f_expr, "numpy")
+                raiz, error = secante(f, x0, x1, tol)
+                if error:
+                    messagebox.showerror("Error", error)
                 else:
                     messagebox.showinfo("Resultado", f"Raíz: {raiz}")
+                    self.graficar_funcion(f_expr, x0 - 2, x1 + 2, raiz, "Secante")
             except Exception as e:
                 messagebox.showerror("Error", f"Ocurrió un error: {str(e)}")
 
         tk.Button(ventana, text="Calcular", command=calcular_secante).grid(row=4, columnspan=2)
 
+    def graficar_funcion(self, f_expr, a, b, raiz, metodo):
+        f = sp.lambdify(x, f_expr, "numpy")
+        x_vals = np.linspace(a, b, 400)
+        f_vals = f(x_vals)
+
+        fig, ax = plt.subplots()
+        ax.plot(x_vals, f_vals, label="Función")
+        ax.axhline(0, color='black', linewidth=0.5)
+        ax.axvline(raiz, color='r', linestyle='--', label=f"Raíz ({metodo})")
+        ax.legend()
+        ax.set_xlabel('x')
+        ax.set_ylabel('f(x)')
+        ax.set_title(f"Función y Raíz: {metodo}")
+
+        canvas = FigureCanvasTkAgg(fig, master=self.root)
+        canvas.draw()
+        canvas.get_tk_widget().pack()
+
 # Crear ventana principal
-root = tk.Tk()
-app = InterfazCeros(root)
-root.mainloop()
+if __name__ == "__main__":
+    root = tk.Tk()
+    app = InterfazCeros(root)
+    root.mainloop()
