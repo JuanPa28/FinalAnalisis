@@ -1,3 +1,5 @@
+# Archivo: Metodos/Modelo/SerieTaylor.py
+
 import tkinter as tk
 from tkinter import messagebox
 import sympy as sp
@@ -17,6 +19,7 @@ def taylor(f, x0, n):
         T = (df_x0 * (x - x0) ** k) / factorial(k)
         p = p + T
     return p
+
 def graficar_serie_taylor(f, x0, n):
     P = taylor(f, x0, n)
     P_func = sp.lambdify(x, P)
@@ -32,7 +35,7 @@ def graficar_serie_taylor(f, x0, n):
     plt.show()
 
 # Interfaz gráfica
-class InterfazTaylor:
+class InterfazSerieTaylor:
     def __init__(self, root):
         self.root = root
         self.root.title("Serie de Taylor")
@@ -57,7 +60,7 @@ class InterfazTaylor:
         grado = int(self.entry_grado.get())
 
         try:
-            f = eval(funcion)
+            f = sp.sympify(funcion)
             polinomio = taylor(f, x0, grado)
 
             messagebox.showinfo("Polinomio de Taylor", f"El polinomio de Taylor es: {polinomio}")
@@ -86,5 +89,5 @@ class InterfazTaylor:
 
 if __name__ == "__main__":
     root = tk.Tk()
-    app = InterfazTaylor(root)
+    app = InterfazSerieTaylor(root)
     root.mainloop()
