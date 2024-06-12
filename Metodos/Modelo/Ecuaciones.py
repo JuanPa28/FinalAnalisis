@@ -68,7 +68,7 @@ class InterfazEcuaciones:
             if h == 0:
                 raise ValueError("El tamaño del paso h no puede ser cero.")
 
-            f = eval(f"lambda t, y: {funcion}", {"_builtins_": None}, {})
+            f = eval(f"lambda t, y: {funcion}", {"__builtins__": None}, {})
             if f is None:
                 raise ValueError("La ecuación diferencial no es válida.")
             return f, a, b, h, ci
