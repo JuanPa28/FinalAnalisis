@@ -1,3 +1,5 @@
+# Archivo: Metodos/Modelo/InterfazCeros.py
+
 import tkinter as tk
 from tkinter import messagebox
 import sympy as sp
@@ -43,7 +45,6 @@ def newton(f_expr, xo, tol):
             return x1, None
         xo = x1
 
-
 def secante(f, x0, x1, tol):
     try:
         while abs(x1 - x0) > tol:
@@ -60,7 +61,6 @@ def secante(f, x0, x1, tol):
         return None, "Error: División por cero."
     except TypeError as e:
         return None, f"Error de tipo: {e}"
-
 
 # Interfaz gráfica
 class InterfazCeros:
