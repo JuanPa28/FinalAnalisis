@@ -23,7 +23,8 @@ def G_seidel(A, b, xo, tol):
         lista.append([x1, max(abs(x1 - xo))])
         return x1, lista
     else:
-        return None, "El sistema iterativo no converge"
+        print(f'El sistema iterativo no converge')
+        return None, None
 
 def Eliminacion_Gaussiana(A, b):
     n = len(b)
@@ -36,24 +37,6 @@ def Eliminacion_Gaussiana(A, b):
     for k in range(n - 1, -1, -1):
         x[k] = (b[k] - np.dot(A[k, k + 1:n], x[k + 1:n])) / A[k, k]
     return x
-
-def Gauss_sum(A, B, X0, tol):
-    n = len(B)
-    norm = 2
-    cont = 0
-    M = 50
-    X1 = np.zeros(n)
-    while(norm >= tol and cont < M):
-        for i in range(n):
-            aux = 0
-            for j in range(n):
-                if (i != j):
-                    aux -= A[i, j] * X0[j]
-            X1[i] = (B[i] + aux) / A[i, i]
-        norm = np.max(np.abs(X1 - X0))
-        X0 = X1.copy()
-        cont += 1
-    return X1
 
 def pivoteo(A, b):
     n = len(b)
@@ -97,7 +80,7 @@ class InterfazSistemasLineales:
         # Campos adicionales para métodos iterativos
         self.label_xo = tk.Label(root, text="Vector inicial X0 (elementos separados por comas):")
         self.entrada_xo = tk.Entry(root, width=40)
-        self.label_tol = tk.Label(root, text="Tolerancia (por ejemplo 1e-6):")
+        self.label_tol = tk.Label(root, text="Tolerancia:")
         self.entrada_tol = tk.Entry(root, width=40)
 
         # Botón para calcular
