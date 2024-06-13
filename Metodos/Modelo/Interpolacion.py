@@ -1,16 +1,12 @@
+import sympy as sp
+
+X = sp.symbols('x')
 import tkinter as tk
 from tkinter import messagebox
 import numpy as np
 import sympy as sp
 
-X = sp.symbols('x')import tkinter as tk
-from tkinter import messagebox
-import numpy as np
-import sympy as sp
-
 X = sp.symbols('x')
-
-# Funciones actualizadas
 
 def polinomio_simple(x_dato, y_dato, grado):
     N = len(x_dato)
@@ -32,20 +28,19 @@ def polinomio_simple(x_dato, y_dato, grado):
 
 def lagrange(xdata, ydata, grado):
     N = min(len(xdata), grado + 1)
-    P = 0  # Inicializar el polinomio interpolante a 0
+    P = 0  
 
     for i in range(N):
-        T = 1  # Inicializar el término de Lagrange para i-ésimo término
+        T = 1 
 
         for j in range(N):
-            if j != i:  # Construir el i-ésimo término de Lagrange, excluyendo el j = i
+            if j != i:  
                 T = T * (X - xdata[j]) / (xdata[i] - xdata[j])
 
-        P = P + T * ydata[i]  # Sumar el i-ésimo término al polinomio interpolante
+        P = P + T * ydata[i]  
 
     resultado = f'El polinomio es P(X): {sp.expand(P)}'
 
-    # Retornar una función lambda que evalúe el polinomio para cualquier valor de X y el resultado
     return sp.lambdify(X, P), resultado
 
 def ajuste_minimos_cuadrados(x_dato, y_dato, grado):
@@ -148,7 +143,7 @@ class InterfazInterpolacionAjuste:
 
         tk.Button(ventana, text="Calcular", command=calcular_ajuste_minimos_cuadrados).grid(row=3, columnspan=2)
 
-# Crear ventana principal
+# Ventana principal
 root = tk.Tk()
 app = InterfazInterpolacionAjuste(root)
 root.mainloop()
@@ -178,20 +173,18 @@ def polinomio_simple(x_dato, y_dato, grado):
 
 def lagrange(xdata, ydata, grado):
     N = min(len(xdata), grado + 1)
-    P = 0  # Inicializar el polinomio interpolante a 0
+    P = 0  
 
     for i in range(N):
-        T = 1  # Inicializar el término de Lagrange para i-ésimo término
-
+        T = 1 
         for j in range(N):
-            if j != i:  # Construir el i-ésimo término de Lagrange, excluyendo el j = i
+            if j != i: 
                 T = T * (X - xdata[j]) / (xdata[i] - xdata[j])
 
-        P = P + T * ydata[i]  # Sumar el i-ésimo término al polinomio interpolante
+        P = P + T * ydata[i]
 
     resultado = f'El polinomio es P(X): {sp.expand(P)}'
 
-    # Retornar una función lambda que evalúe el polinomio para cualquier valor de X y el resultado
     return sp.lambdify(X, P), resultado
 
 
@@ -297,7 +290,6 @@ class InterfazInterpolacionAjuste:
         tk.Button(ventana, text="Calcular", command=calcular_ajuste_minimos_cuadrados).grid(row=3, columnspan=2)
 
 
-# Crear ventana principal
 root = tk.Tk()
 app = InterfazInterpolacionAjuste(root)
 root.mainloop()
