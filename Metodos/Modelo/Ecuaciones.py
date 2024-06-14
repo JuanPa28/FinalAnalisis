@@ -3,8 +3,6 @@ from tkinter import messagebox
 import numpy as np
 import matplotlib.pyplot as plt
 
-
-# Método de Euler
 def metodo_euler(f, a, b, h, condicion_inicial):
     n = int((b - a) / h)
     t = np.linspace(a, b, n + 1)
@@ -13,8 +11,6 @@ def metodo_euler(f, a, b, h, condicion_inicial):
         y.append(y[-1] + h * f(t[i], y[-1]))
     return t, y
 
-
-# Método de Runge-Kutta de orden 4
 def metodo_runge_kutta(f, a, b, h, condicion_inicial):
     n = int((b - a) / h)
     t = np.linspace(a, b, n + 1)
