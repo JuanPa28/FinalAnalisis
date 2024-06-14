@@ -23,7 +23,6 @@ def metodo_runge_kutta(f, a, b, h, condicion_inicial):
         y.append(y[-1] + (k1 + 2 * k2 + 2 * k3 + k4) / 6)
     return t, y
 
-
 # Interfaz gráfica
 class InterfazEcuaciones:
     def __init__(self, root):
@@ -33,22 +32,27 @@ class InterfazEcuaciones:
         tk.Label(root, text="Ecuación diferencial:").grid(row=0, column=0)
         self.entrada_funcion = tk.Entry(root)
         self.entrada_funcion.grid(row=0, column=1)
+        self.entrada_funcion.insert(0, "np.sin(t) - y")
 
         tk.Label(root, text="a:").grid(row=1, column=0)
         self.entrada_a = tk.Entry(root)
         self.entrada_a.grid(row=1, column=1)
+        self.entrada_a.insert(0, "0")
 
         tk.Label(root, text="b:").grid(row=2, column=0)
         self.entrada_b = tk.Entry(root)
         self.entrada_b.grid(row=2, column=1)
+        self.entrada_b.insert(0, "10")
 
         tk.Label(root, text="h:").grid(row=3, column=0)
         self.entrada_h = tk.Entry(root)
         self.entrada_h.grid(row=3, column=1)
+        self.entrada_h.insert(0, "0.1")
 
         tk.Label(root, text="Condición inicial:").grid(row=4, column=0)
         self.entrada_ci = tk.Entry(root)
         self.entrada_ci.grid(row=4, column=1)
+        self.entrada_ci.insert(0, "1")
 
         tk.Button(root, text="Método de Euler", command=self.calcular_euler).grid(row=5, column=0, pady=10)
         tk.Button(root, text="Runge-Kutta de Orden 4", command=self.calcular_runge_kutta).grid(row=5, column=1, pady=10)
@@ -64,9 +68,7 @@ class InterfazEcuaciones:
             if h == 0:
                 raise ValueError("El tamaño del paso h no puede ser cero.")
 
-            f = eval(f"lambda t, y: {funcion}", {"__builtins__": None}, {})
-            if f is None:
-                raise ValueError("La ecuación diferencial no es válida.")
+            f = eval(f"lambda t, y: {funcion}", {"np": np})
             return f, a, b, h, ci
         except Exception as e:
             messagebox.showerror("Error", f"Entrada inválida: {e}")
@@ -100,8 +102,8 @@ class InterfazEcuaciones:
         plt.grid(True)
         plt.show()
 
-
 # Crear ventana principal
 root = tk.Tk()
 app = InterfazEcuaciones(root)
 root.mainloop()
+
