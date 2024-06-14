@@ -6,7 +6,7 @@ from tkinter import Menu
 class InterfazPrincipal:
     def __init__(self, root):
         self.root = root
-        self.root.title("Métodos Numéricos")
+        self.root.title("Análisis Númerico")
         self.root.geometry("400x600")  # Tamaño de la ventana principal
         self.root.configure(bg="#2C3E50")  # Fondo de la ventana principal
 
