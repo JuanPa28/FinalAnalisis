@@ -14,7 +14,7 @@ class InterfazPrincipal:
 
         titulo = tk.Label(
             root,
-            text="Métodos Numéricos",
+            text="Análisis Númerico",
             font=("Helvetica", 24, "bold"),
             fg="#ECF0F1",
             bg="#2C3E50"
